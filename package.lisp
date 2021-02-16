@@ -3,6 +3,7 @@
 (defpackage #:freesound
   (:use #:cl)
   (:export
+   #:*token*
    #:text-search
    #:content-search
    #:combined-search
