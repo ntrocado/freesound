@@ -166,7 +166,7 @@
 (defun similar (sound-id &key descriptors-filter
 			   page page-size fields descriptors normalized)
   (get-response
-   (uri (format nil "apiv2/sounds/~a/analysis/~@[~a~]"
+   (uri (format nil "apiv2/sounds/~a/similar/~@[~a~]"
 		sound-id
 		(http-parameters (list "descriptors_filter" (parse-filter descriptors-filter)
 				       "page" page
