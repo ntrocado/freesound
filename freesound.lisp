@@ -4,23 +4,62 @@
 
 (defparameter *token*
   (let ((file (asdf:system-relative-pathname "freesound" ".token")))
-    (if (uiop:file-exists-p file)
-	;; read the token from a ".token" file in the same directory as this source code
-	(uiop:read-file-string file)
-	;; or paste your token here:
-	""))
+    (when (uiop:file-exists-p file)
+      ;; read the token from a ".token" file in the same directory as this source code
+      (uiop:read-file-string file)))
   "An alphanumeric string issued by Freesound to authenticate API calls.")
+
+;;;TODO also load from file
+(defparameter *client-id* "")
+
+(defvar *oauth2-access-token*)
+(defvar *oauth2-refresh-token*)
 
 (defparameter *root-uri* "https://freesound.org/")
 
+(defun uri (resource &optional (root *root-uri*))
+  (uiop:strcat root resource))
+
+(defun oauth2-authorize (&optional (client-id *client-id*))
+  (assert (stringp client-id))
+  (trivial-open-browser:open-browser
+   (format nil
+	   "~a?client_id=~a&response_type=code"
+	   (uri "apiv2/oauth2/authorize/")
+	   client-id)))
+
+(defun oauth2-access-token (code &key (token *token*) (client-id *client-id*) (refresh nil))
+  "Return the OAuth2 access token and a refresh token. CODE is either the initial authorization code, or a previously generated refresh token. In this second case, REFRESH must be T. Also set *oauth2-access-token* to the new value."
+  (let* ((params (if refresh
+		     "refresh_token&refresh_token="
+		     "authorization_code&code="))
+	 (response
+	   (yason:parse
+	    (dex:post
+	     (format nil
+       		     "~a?client_id=~a&client_secret=~a&grant_type=~a~a"
+		     (uri "apiv2/oauth2/access_token/")
+		     client-id
+		     token
+		     params
+		     code))))
+	 (access-token (gethash "access_token" response))
+	 (refresh-token (gethash "refresh_token" response)))
+    (setf *oauth2-access-token* access-token
+	  *oauth2-refresh-token* refresh-token)
+    (values access-token refresh-token)))
+
+;;;TODO merge this with next? change names?
 (defun get-response (uri &optional (token *token*))
   (yason:parse
    (dex:get uri :headers (list (cons "Authorization"
 				     (uiop:strcat "Token " token))))))
 
-(defun uri (resource)
-  (check-type *root-uri* string)
-  (uiop:strcat *root-uri* resource))
+(defun oauth2-response (uri &key (method :get) (oauth2-access-token *oauth2-access-token*))
+  (yason:parse
+   (dex:request uri :method method :headers (list (cons "Authorization"
+							(uiop:strcat "Bearer "
+								     oauth2-access-token))))))
 
 (defun commas (lst)
   (format nil "~{~a~^,~}" lst))

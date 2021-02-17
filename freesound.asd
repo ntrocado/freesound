@@ -5,7 +5,7 @@
   :author "Nuno Trocado https://nunotrocado.com"
   :license  "MIT"
   :version "0.0.1"
-  :depends-on ("alexandria" "cl-ppcre" "dexador" "yason")
+  :depends-on ("alexandria" "cl-ppcre" "dexador" "yason" "trivial-open-browser")
   :serial t
   :components ((:file "package")
                (:file "freesound")))
