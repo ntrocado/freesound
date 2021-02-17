@@ -26,9 +26,10 @@
   (format nil "~{~a~^,~}" lst))
 
 (defun ensure-commas (in)
-  (etypecase in
-    (list (commas in))
-    ((or number string) in)))
+  (when in
+    (etypecase in
+      (list (commas in))
+      ((or number string) in))))
 
 (defun prepare-plist (plist)
   (let ((accum))
