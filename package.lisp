@@ -18,7 +18,20 @@
    #:similar
    #:comments
    #:download
-   #:pending-downloads
+   #:upload
+   #:describe-sound
+   #:pending-uploads
+   #:edit-sound-description
    #:bookmark
+   #:rate
+   #:comment
+   #:user-instance
+   #:user-sounds
+   #:user-packs
+   #:user-bookmark-categories
+   #:user-bookmark-categories-sounds
+   #:pack-instance
+   #:pack-sounds
+   #:pack-download
    #:me
    #:descriptors))

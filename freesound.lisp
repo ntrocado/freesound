@@ -248,19 +248,63 @@
 				     :want-stream t :force-binary t)
 			    out)))
 
+(defun optional-params-list (names params)
+  (assert (= (length names) (length params)))
+  (loop :for param :in params
+	:for name :in names
+	:when param
+	  :collect (cons name param)))
+
+(defun description-tags-format (tags)
+  (when tags
+    (etypecase tags
+      (string tags)
+      (list (format nil "~{~(~a~)~^ ~}" tags)))))
+
+(defun translate-license (license)
+  (if (stringp license)
+      license
+      (ecase license
+	(:attribution "Attribution")
+	(:attribution-noncommercial "Attribution Noncommercial")
+	(:creative-commons "Creative Commons 0"))))
+
 (defun upload (file &key name tags description license pack geotag)
-  ())
+  "Upload an audio FILE into Freesound and (optionally) describe it."
+  (assert (or (and tags description license)
+	      (not (or tags description license))))
+  (resource (uri "apiv2/sounds/upload/")
+	    :method :post
+	    :content (optional-params-list
+		      '("audiofile" "name" "tags" "description" "license" "pack" "geotag")
+		      (list (uiop:ensure-pathname file)
+			    name (description-tags-format tags) description
+			    (translate-license license) pack geotag))
+	    :authentication :oauth2))
 
 (defun describe-sound (upload-filename tags description license &key name pack geotag)
-  ())
+  "Describe a previously uploaded audio file that has not yet been described. This method requires OAuth2 authentication."
+  (resource (uri "apiv2/sounds/describe/")
+	    :method :post
+	    :content (optional-params-list
+		      '("upload_filename" "name" "tags" "description" "license" "pack" "geotag")
+		      (list upload-filename name (description-tags-format tags) description
+			    (translate-license license) pack geotag))
+	    :authentication :oauth2))
 
 (defun pending-uploads ()
   "Retrieve a list of audio files uploaded by the Freesound user logged in using OAuth2 that have not yet been described, processed or moderated."
   (resource (uri "apiv2/sounds/pending_uploads/") :authentication :oauth2))
 
-(defun edit-sound-description (&key name tags description license pack geotag)
-  "Edit the description of an already existing sound. Note that this resource can only be used to edit descriptions of sounds created by the Freesound user logged in using OAuth2. This method requires OAuth2 authentication."
-  ())
+(defun edit-sound-description (sound-id &key name tags description license pack geotag)
+  "Edit the description of an already existing sound. Note that this resource can only be used to edit descriptions of sounds created by the Freesound user logged in using OAuth2."
+  (resource (uri "apiv2/sounds/~a/edit/" sound-id)
+	    :method :post
+	    :content (optional-params-list
+		      '("name" "tags" "description" "license" "pack" "geotag")
+		      (list name (description-tags-format tags) description
+			    (translate-license license) pack geotag))
+	    :authentication :oauth2))
 
 (defun bookmark (sound-id &key name category)
   "Bookmark an existing sound. The sound will be bookmarked by the Freesound user logged in using OAuth2, therefore this method requires OAuth2 authentication."
@@ -269,9 +313,18 @@
 				     ("category" . ,category))
 	    :authentication :oauth2))
 
-(defun rate ())
+(defun rate (sound-id rating)
+  "Rate an existing sound SOUND-ID with RATING, between 0 and 5 (where 5 is the maximum). The sound will be rated by the Freesound user logged in using OAuth2."
+  (assert (<= 0 rating 5))
+  (resource (uri (format nil "apiv2/sounds/~a/rate/" sound-id))
+	    :method :post :content `(("rating" . ,rating))
+	    :authentication :oauth2))
 
-(defun comment ())
+(defun comment (sound-id comment)
+  "Post a COMMENT to an existing sound SOUND-ID. The comment will appear to be made by the Freesound user logged in using OAuth2."
+  (resource (uri (format nil "apiv2/sounds/~a/comment" sound-id))
+	    :method :post :content `(("comment" . ,comment))
+	    :authentication :oauth2))
 
 ;;; User resources
 
