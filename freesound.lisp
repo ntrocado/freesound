@@ -267,6 +267,56 @@
 				     ("category" . ,category))
 	    :authentication :oauth2))
 
+(defun rate ())
+
+(defun comment ())
+
+;;; User resources
+
+(defun user-instance (username)
+  "Retrieve information about Freesound user USERNAME."
+  (resource (uri (format nil "apiv2/users/~a/" username))))
+
+(defun user-sounds (username &key page page-size fields descriptors normalized)
+  "Retrieve information about the sounds uploaded by Freesound user USERNAME."
+  (resource (uri (format nil "apiv2/users/~a/sounds/~a"
+			 username
+			 (http-parameters (list "page" page
+						"page_size" page-size
+						"fields" (ensure-commas fields)
+						"descriptors" (ensure-commas descriptors)
+						"normalized" normalized))))))
+
+(defun user-packs (username &key page page-size)
+  "Retrieve information about the sounds uploaded by Freesound user USERNAME."
+  (resource (uri (format nil "apiv2/users/~a/packs/~a"
+			 username
+			 (http-parameters (list "page" page
+						"page_size" page-size))))))
+
+(defun user-bookmark-categories (username &key page page-size)
+"Retrieve the bookmark categories created by Freesound user USERNAME."
+  (resource (uri (format nil "apiv2/users/~a/bookmark_categories/~a"
+			 username
+			 (http-parameters (list "page" page
+						"page_size" page-size))))))
+
+(defun user-bookmark-category-sounds (username &key (bookmark-category-id 0)
+						 page page-size fields descriptors normalized)
+  "Retrieve information about the sounds from a bookmark category created by Freesound user USERNAME."
+  (resource (uri (format nil "apiv2/users/~a/bookmark_categories/~a/sounds/~a"
+			 username
+			 bookmark-category-id
+			 (http-parameters (list "page" page
+						"page_size" page-size
+						"fields" (ensure-commas fields)
+						"descriptors" (ensure-commas descriptors)
+						"normalized" normalized)))))))
+
+;;; Pack resources
+
+(defun pack-instance ())
+
 ;;; Other resources
 
 (defun me ()
