@@ -2,18 +2,25 @@
 
 (in-package #:freesound)
 
-(defparameter *token*
-  (let ((file (asdf:system-relative-pathname "freesound" ".token")))
+(defun system-relative-read-file (filename)
+  (let ((file (asdf:system-relative-pathname "freesound" filename)))
     (when (uiop:file-exists-p file)
-      ;; read the token from a ".token" file in the same directory as this source code
-      (uiop:read-file-string file)))
+      (uiop:read-file-string file))))
+
+(defvar *token*
+  ;; try to read the token from a ".token" file in the same directory as this source code
+  (system-relative-read-file ".token")
   "An alphanumeric string issued by Freesound to authenticate API calls.")
 
-;;;TODO also load from file
-(defparameter *client-id* "")
+(defvar *client-id*
+  ;; try to read to client-id from a ".client-id" file in the same directory as this source code
+  (system-relative-read-file ".client-id")
+  "An alphanumeric string issued by Freesound, used as part of OAuth2 authentication.")
 
-(defvar *oauth2-access-token*)
-(defvar *oauth2-refresh-token*)
+(defvar *oauth2-access-token* nil
+  "An alphanumeric string used as an access token for OAuth2 restricted resources.")
+(defvar *oauth2-refresh-token* nil
+  "An alphanumeric string used to get a new OAuth2 access token, without starting the whole authentication process.")
 
 (defparameter *root-uri* "https://freesound.org/")
 
@@ -21,12 +28,15 @@
   (uiop:strcat root resource))
 
 (defun oauth2-authorize (&optional (client-id *client-id*))
+  "As the first step of OAuth2 authentication, open the default browser on a Freesound page, where users are prompted to log in and asked to give permission for the application. The url is also printed to standard output."
   (assert (stringp client-id))
-  (trivial-open-browser:open-browser
-   (format nil
+  (let ((url (format nil
 	   "~a?client_id=~a&response_type=code"
 	   (uri "apiv2/oauth2/authorize/")
 	   client-id)))
+    (print url)
+    (finish-output)
+    (trivial-open-browser:open-browser url)))
 
 (defun oauth2-access-token (code &key (token *token*) (client-id *client-id*) (refresh nil))
   "Return the OAuth2 access token and a refresh token. CODE is either the initial authorization code, or a previously generated refresh token. In this second case, REFRESH must be T. Also set *oauth2-access-token* to the new value."
@@ -49,17 +59,13 @@
 	  *oauth2-refresh-token* refresh-token)
     (values access-token refresh-token)))
 
-;;;TODO merge this with next? change names?
-(defun get-response (uri &optional (token *token*))
-  (yason:parse
-   (dex:get uri :headers (list (cons "Authorization"
-				     (uiop:strcat "Token " token))))))
-
-(defun oauth2-response (uri &key (method :get) (oauth2-access-token *oauth2-access-token*))
-  (yason:parse
-   (dex:request uri :method method :headers (list (cons "Authorization"
-							(uiop:strcat "Bearer "
-								     oauth2-access-token))))))
+(defun resource (uri &key (method :get) content (authentication :token)
+		       (token *token*) (oauth2-access-token *oauth2-access-token*))
+  (let ((header (list (cons "Authorization"
+			    (ecase authentication
+			      (:token (uiop:strcat "Token " token))
+			      (:oauth2 (uiop:strcat "Bearer " oauth2-access-token)))))))
+    (yason:parse (dex:request uri :method method :content content :headers header))))
 
 (defun commas (lst)
   (format nil "~{~a~^,~}" lst))
@@ -93,29 +99,30 @@
       (list lst)))
 
 (defun parse-filter (filter)
-  (etypecase filter
-    (list
-     (string-trim '(#\Space)
-		  (with-output-to-string (out)
-		    (dolist (arg (ensure-list-of-lists filter))
-		      (assert (= (length arg) 2))
-		      (destructuring-bind (field val)
-			  arg
-			(format out "~a:" field)
-			(if (listp val)
-			    (ecase (first val)
-			      (:and (format out "(~{~a~^ AND ~}) " (rest val)))
-			      (:or (format out "(~{~a~^ OR ~}) " (rest val)))
-			      (:range (format out "[~a TO ~a] " (cadr val) (caddr val)))
-			      (:range-to (format out "[* TO ~a] " (second val)))
-			      (:range-from (format out "[~a TO *] " (second val))))
-			    (format out "~a " val)))))))
-    (string filter)))
+  (when filter
+    (etypecase filter
+      (list
+       (string-trim '(#\Space)
+		    (with-output-to-string (out)
+		      (dolist (arg (ensure-list-of-lists filter))
+			(assert (= (length arg) 2))
+			(destructuring-bind (field val)
+			    arg
+			  (format out "~a:" field)
+			  (if (listp val)
+			      (ecase (first val)
+				(:and (format out "(~{~a~^ AND ~}) " (rest val)))
+				(:or (format out "(~{~a~^ OR ~}) " (rest val)))
+				(:range (format out "[~a TO ~a] " (cadr val) (caddr val)))
+				(:range-to (format out "[* TO ~a] " (second val)))
+				(:range-from (format out "[~a TO *] " (second val))))
+			      (format out "~a " val)))))))
+      (string filter))))
 
 (defun text-search (query &key filter sort group-by-pack
 			    page page-size fields descriptors normalized)
   "Search sounds by matching their tags and other kids of metadata."
-  (get-response
+  (resource
    (uiop:strcat (uri "apiv2/search/text/")
 		(http-parameters (list "query" (ensure-commas query)
 				       "filter" (parse-filter filter)
@@ -143,7 +150,7 @@
 (defun content-search (target &key descriptors-filter 
 				page page-size fields descriptors normalized)
   "Search sounds based on their content descriptors."
-  (get-response
+  (resource
    (uiop:strcat (uri "apiv2/search/content/")
 		(http-parameters (list "target" (parse-target target)
 				       "descriptors_filter" (parse-filter descriptors-filter)
@@ -159,7 +166,7 @@
   (assert (not (or (eq (null query) (null filter))
 		   (when query (null descriptors-filter))
 		   (when target (null filter)))))
-  (get-response
+  (resource
    (uiop:strcat (uri "apiv2/search/combined/")
 		(http-parameters (list "query" (ensure-commas query)
 				       "filter" (parse-filter filter)
@@ -172,11 +179,12 @@
 				       "descriptors" (ensure-commas descriptors)
 				       "normalized" normalized)))))
 
+;;; TODO: transform this into a function to pretty print search results
 (defun result-plist (sound-list-response)
   (mapcar #'alexandria:hash-table-plist (gethash "results" sound-list-response)))
 
 (defun info (sound-id &key fields descriptors normalized)
-  (get-response
+  (resource
    (uri (format nil "apiv2/sounds/~a/~@[~a~]"
 		sound-id
 		(http-parameters (list "fields" (ensure-commas fields)
@@ -197,7 +205,7 @@
 	     pathname))
 
 (defun analysis (sound-id &key descriptors normalized)
-  (get-response
+  (resource
    (uri (format nil "apiv2/sounds/~a/analysis/~@[~a~]"
 		sound-id
 		(http-parameters (list "descriptors" (ensure-commas descriptors)
@@ -205,7 +213,7 @@
 
 (defun similar (sound-id &key descriptors-filter
 			   page page-size fields descriptors normalized)
-  (get-response
+  (resource
    (uri (format nil "apiv2/sounds/~a/similar/~@[~a~]"
 		sound-id
 		(http-parameters (list "descriptors_filter" (parse-filter descriptors-filter)
@@ -217,10 +225,49 @@
 
 (defun comments (sound-id &key page page-size)
   "Retrieves comments for SOUND-ID."
-  (get-response (uri (format nil "apiv2/sounds/~a/comments/~@[~a~]"
+  (resource (uri (format nil "apiv2/sounds/~a/comments/~@[~a~]"
 			     sound-id
 			     (http-parameters (list "page" page
 						    "page_size" page-size))))))
 
+(defun download (sound-id pathname &key (if-exists :supersede))
+  (check-type *oauth2-access-token* string)
+  (with-open-file (out pathname
+		       :direction :output :element-type '(unsigned-byte 8)
+		       :if-exists if-exists :if-does-not-exist :create)
+    (alexandria:copy-stream (dex:get (uri (format nil "apiv2/sounds/~a/download/" sound-id))
+				     :headers (list (cons "Authorization"
+							  (uiop:strcat "Bearer "
+								       *oauth2-access-token*)))
+				     :want-stream t :force-binary t)
+			    out)))
+
+(defun upload (file &key name tags description license pack geotag)
+  ())
+
+(defun describe (upload-filename tags description license &key name pack geotag)
+  ())
+
+(defun pending-uploads ()
+  "Retrieve a list of audio files uploaded by the Freesound user logged in using OAuth2 that have not yet been described, processed or moderated."
+  (resource (uri "apiv2/sounds/pending_uploads/") :authentication :oauth2))
+
+(defun edit-sound-description (&key name tags description license pack geotag)
+  "Edit the description of an already existing sound. Note that this resource can only be used to edit descriptions of sounds created by the Freesound user logged in using OAuth2. This method requires OAuth2 authentication."
+  ())
+
+(defun bookmark (sound-id &key name category)
+  "Bookmark an existing sound. The sound will be bookmarked by the Freesound user logged in using OAuth2, therefore this method requires OAuth2 authentication."
+  (resource (uri (format nil "apiv2/sounds/~a/bookmark/" sound-id))
+	    :method :post :content `(("name" . ,name)
+				     ("category" . ,category))
+	    :authentication :oauth2))
+
+;;; Other resources
+
+(defun me ()
+  "Information about the user that is logged in using the OAuth2 procedure."
+  (resource (uri "apiv2/me/") :authentication :oauth2))
+
 (defun descriptors ()
-  (get-response (uri "apiv2/descriptors/")))
+  (resource (uri "apiv2/descriptors/")))
