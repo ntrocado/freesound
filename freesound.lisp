@@ -313,11 +313,35 @@
 						"page_size" page-size
 						"fields" (ensure-commas fields)
 						"descriptors" (ensure-commas descriptors)
-						"normalized" normalized)))))))
+						"normalized" normalized))))))
 
 ;;; Pack resources
 
-(defun pack-instance ())
+(defun pack-instance (pack-id)
+  "Retrieve information about the pack PACK-ID."
+  (resource (uri (format nil "apiv2/packs/~a/" pack-id))))
+
+(defun pack-sounds (pack-id &key page page-size fields descriptors normalized)
+  "Retrieve information about the sounds included in the pack PACK-ID."
+  (resource (uri (format nil "apiv2/packs/~a/sounds/~a"
+			 pack-id
+			 (http-parameters (list "page" page
+						"page_size" page-size
+						"fields" (ensure-commas fields)
+						"descriptors" (ensure-commas descriptors)
+						"normalized" normalized))))))
+
+(defun pack-download (pack-id pathname &key (if-exists :supersede))
+  (check-type *oauth2-access-token* string)
+  (with-open-file (out pathname
+		       :direction :output :element-type '(unsigned-byte 8)
+		       :if-exists if-exists :if-does-not-exist :create)
+    (alexandria:copy-stream (dex:get (uri (format nil "apiv2/packs/~a/download/" pack-id))
+				     :headers (list (cons "Authorization"
+							  (uiop:strcat "Bearer "
+								       *oauth2-access-token*)))
+				     :want-stream t :force-binary t)
+			    out)))
 
 ;;; Other resources
 
