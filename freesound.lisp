@@ -63,8 +63,10 @@
 		       (token *token*) (oauth2-access-token *oauth2-access-token*))
   (let ((header (list (cons "Authorization"
 			    (ecase authentication
-			      (:token (uiop:strcat "Token " token))
-			      (:oauth2 (uiop:strcat "Bearer " oauth2-access-token)))))))
+			      (:token (progn (check-type token string)
+					     (uiop:strcat "Token " token)))
+			      (:oauth2 (progn (check-type oauth2-access-token string)
+					      (uiop:strcat "Bearer " oauth2-access-token))))))))
     (yason:parse (dex:request uri :method method :content content :headers header))))
 
 (defun commas (lst)
