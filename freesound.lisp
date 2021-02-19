@@ -98,6 +98,8 @@
       lst
       (list lst)))
 
+;;; Search resources
+
 (defun parse-filter (filter)
   (when filter
     (etypecase filter
@@ -182,6 +184,8 @@
 ;;; TODO: transform this into a function to pretty print search results
 (defun result-plist (sound-list-response)
   (mapcar #'alexandria:hash-table-plist (gethash "results" sound-list-response)))
+
+;;; Sound resources
 
 (defun info (sound-id &key fields descriptors normalized)
   (resource
