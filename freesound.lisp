@@ -251,7 +251,7 @@
 (defun upload (file &key name tags description license pack geotag)
   ())
 
-(defun describe (upload-filename tags description license &key name pack geotag)
+(defun describe-sound (upload-filename tags description license &key name pack geotag)
   ())
 
 (defun pending-uploads ()
