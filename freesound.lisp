@@ -183,10 +183,6 @@
 				       "descriptors" (ensure-commas descriptors)
 				       "normalized" normalized)))))
 
-;;; TODO: transform this into a function to pretty print search results
-(defun result-plist (sound-list-response)
-  (mapcar #'alexandria:hash-table-plist (gethash "results" sound-list-response)))
-
 ;;; Sound resources
 
 (defun info (sound-id &key fields descriptors normalized)
@@ -404,3 +400,21 @@
 
 (defun descriptors ()
   (resource (uri "apiv2/descriptors/")))
+
+;;; Convenience functions
+
+(defun print-sound-info (info &optional (stream *standard-output*))
+  "Pretty print INFO, a sound instance response."
+  (maphash (lambda (k v) (format stream "~a:~15t~a~%" k v)) info)
+  info)
+
+(defun print-search-result (search-result &optional (stream *standard-output*))
+  "Pretty print SEARCH-RESULT, a sound list response."
+  (assert (equal '("previous" "results" "next" "count")
+		 (alexandria:hash-table-keys search-result)))
+  (format t "The search returned ~a results from a total of ~a:~%"
+	  (length (gethash "results" search-result))
+	  (gethash "count" search-result))
+  (dolist (sound (gethash "results" search-result) search-result)
+    (terpri)
+    (print-sound-info sound)))
