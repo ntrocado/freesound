@@ -38,7 +38,7 @@
     (finish-output)
     (trivial-open-browser:open-browser url)))
 
-(defun oauth2-access-token (code &key (token *token*) (client-id *client-id*) (refresh nil))
+(defun oauth2-get-tokens (code &key (token *token*) (client-id *client-id*) (refresh nil))
   "Return the OAuth2 access token and a refresh token. CODE is either the initial authorization code, or a previously generated refresh token. In this second case, REFRESH must be T. Also set *oauth2-access-token* to the new value."
   (let* ((params (if refresh
 		     "refresh_token&refresh_token="
@@ -60,13 +60,13 @@
     (values access-token refresh-token)))
 
 (defun resource (uri &key (method :get) content (authentication :token)
-		       (token *token*) (oauth2-access-token *oauth2-access-token*))
+		       (token *token*) (oauth2-get-tokens *oauth2-access-token*))
   (let ((header (list (cons "Authorization"
 			    (ecase authentication
 			      (:token (progn (check-type token string)
 					     (uiop:strcat "Token " token)))
-			      (:oauth2 (progn (check-type oauth2-access-token string)
-					      (uiop:strcat "Bearer " oauth2-access-token))))))))
+			      (:oauth2 (progn (check-type oauth2-get-tokens string)
+					      (uiop:strcat "Bearer " oauth2-get-tokens))))))))
     (yason:parse (dex:request uri :method method :content content :headers header))))
 
 (defun commas (lst)
