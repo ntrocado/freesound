@@ -35,6 +35,8 @@ The default browser will be opened and you'll be asked to log in and authorize t
 
 Done. This function will also return two values: the access token used for all OAuth2 resources, and a refresh token. If you save the refresh token you can spare yourself (or the user of your app) the full authorization process, by using `(oauth2-get-tokens <refresh token> :refresh t)` each time the authorization times out, which it does after 24 hours.
 
+## Documentation
+
 ## Examples
 
 Perform a text search, using a minus '-' character to exclude terms from the search:
@@ -46,6 +48,8 @@ This is equivalent:
 ``` lisp
 (text-search '("conga" "percussive" "-loop"))
 ```
+
+*Filters*
 
 `print-search-result` is a convenience function to pretty print the results.
 
@@ -79,3 +83,7 @@ name:          MSfxP6 - 183 - One Shot Sound 3
 analysis:      lowlevel:      spectral_cent: mean:          435.96042
                               pitch:         mean:          460.73337
 ```
+
+## Contributing
+
+Feedback, questions, bug reports, pull requests, etc. are welcomed.
