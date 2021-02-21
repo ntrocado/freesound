@@ -33,7 +33,7 @@ The default browser will be opened and you'll be asked to log in and authorize t
 (oauth2-get-tokens <code>)
 ```
 
-Done. This function will also return two values: the access token used for all OAuth2 resources, and a refresh token. If you save the refresh token you can spare yourself (or the user of your app) the full authorization process, by using `(oauth2-get-tokens <refresh token> :refresh t)` each time the authorization times out, which it does after 24 hours.
+This function stores the oauth2 token in `*oauth2-access-token*`, which will be used in further API calls. It will also return two values: the access token itself and a refresh token. If you save the refresh token you can spare yourself (or the user of your app) the full authorization process, by using `(oauth2-get-tokens <refresh token> :refresh t)` each time the authorization times out, which it does after 24 hours.
 
 ## Documentation
 
@@ -49,7 +49,15 @@ This is equivalent:
 (text-search '("conga" "percussive" "-loop"))
 ```
 
-*Filters*
+In general, any request parameters can be passed either as a single string conforming to the API syntax, or as a list of terms.
+
+Filter properties can be further specified with the operators `:and`, `:or`, `:range`, `:range-to`, and `:range-from`. For example:
+``` lisp
+(text-search "rain" 
+             :filter '((:tag (:and "soundscape" "forest")) 
+                       (:created (:range-from "2010-12-01T23:59:59.999Z")) 
+                       (:duration (:range 10 120))))
+```
 
 `print-search-result` is a convenience function to pretty print the results.
 
