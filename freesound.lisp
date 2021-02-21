@@ -406,9 +406,15 @@
 
 ;;; Convenience functions
 
-(defun print-sound-info (info &optional (stream *standard-output*))
-  "Pretty print INFO, a sound instance response."
-  (maphash (lambda (k v) (format stream "~a:~15t~a~%" k v)) info)
+(defun print-columns (k v level stream)
+  (format stream "~0,vt~a:" (* 15 level) (subseq k 0 (min 13 (length k))))
+  (if (hash-table-p v)
+      (maphash (lambda (k v) (print-column k v (1+ level))) v)
+      (format stream "~15,15t~a~%" v)))
+
+(defun print-info (info &optional (stream *standard-output*))
+  "Pretty print INFO, the response to `info` (sound instance) or to `analysis`."
+  (maphash (lambda (k v) (print-columns k v 0 stream)) info)
   info)
 
 (defun print-search-result (search-result &optional (stream *standard-output*))
