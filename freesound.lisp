@@ -112,7 +112,10 @@
 			(assert (= (length arg) 2))
 			(destructuring-bind (field val)
 			    arg
-			  (format out "~a:" field)
+			  (format out "~a:"
+				  (etypecase field
+				    (string field)
+				    (symbol (string-downcase (symbol-name field)))))
 			  (if (listp val)
 			      (ecase (first val)
 				(:and (format out "(~{~a~^ AND ~}) " (rest val)))
