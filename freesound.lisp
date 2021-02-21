@@ -128,10 +128,14 @@
 
 (defun text-search (query &key filter sort group-by-pack
 			    page page-size fields descriptors normalized)
-  "Search sounds by matching their tags and other kids of metadata."
+  "Search sounds by matching their tags and other kids of metadata.
+
+   API documentation: https://freesound.org/docs/api/resources_apiv2.html#id53
+"
   (resource
    (uiop:strcat (uri "apiv2/search/text/")
-		(http-parameters (list "query" (ensure-commas query)
+		(http-parameters (list "query" (format nil "~{~a~^ ~}"
+						       (alexandria:ensure-list query))
 				       "filter" (parse-filter filter)
 				       "sort" sort
 				       "group_by_pack" group-by-pack
