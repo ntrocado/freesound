@@ -53,7 +53,7 @@ There are also convenience functions to make it easier to perform quick queries 
 
 ### Searching
 
-Perform a text search, using a minus '-' character to exclude terms from the search:
+Perform a text search, using the minus '-' character to exclude terms from the search:
 
 ``` lisp
 (text-search "conga percussive -loop")
@@ -128,7 +128,7 @@ The target for `content-search` can also be another sound. In this case, the tar
 ``` lisp
 (content-search 39210
 		:descriptors-filter '(("tonal.key_key" "\"A\"")
-				      ("tonal.key_strength" (:range-from 0.8))))
+                                      ("tonal.key_strength"	(:range-from 0.8))))
 ```
 
 Note that for parameters that must be enclosed in double-quotes, we have to escape the double-quotes, like "A" above.
@@ -139,7 +139,7 @@ Finally, it's also possible to search in metadata and audio features at the same
 
 ### Sounds
 
-Use `info` to get information about a sound. For example:
+Use `info` to get information on a sound from the Freesound database. For example:
 
 ``` lisp
 (info 1234 :fields "filesize")
@@ -190,7 +190,7 @@ And `download` for other formats, e.g.:
 
 ``` lisp
 (download 345 (merge-pathnames (gethash "name" (info 345))
-			       (user-homedir-pathname)))
+                               (user-homedir-pathname)))
 ```
 
 You can also upload your sounds with `upload`, either describing them at the same time or using `describe-sound` later. Check the list of sounds pending approval with `pending-uploads`.
