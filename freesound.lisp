@@ -494,7 +494,7 @@ API documentation: https://freesound.org/docs/api/resources_apiv2.html#id81"
 (defun print-columns (k v level stream)
   (format stream "~0,vt~a:" (* 15 level) (subseq k 0 (min 13 (length k))))
   (if (hash-table-p v)
-      (maphash (lambda (k v) (print-column k v (1+ level))) v)
+      (maphash (lambda (k v) (print-columns k v (1+ level) stream)) v)
       (format stream "~15,15t~a~%" v)))
 
 (defun print-info (info &optional (stream *standard-output*))
