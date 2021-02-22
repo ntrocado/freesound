@@ -133,6 +133,8 @@ The target for `content-search` can also be another sound. In this case, the tar
 
 Note that for parameters that must be enclosed in double-quotes, we have to escape the double-quotes, like "A" above.
 
+You can achieve the same kind of search with `similar`.
+
 Finally, it's also possible to search in metadata and audio features at the same time, with `combined-search`.
 
 ### Sounds
@@ -195,6 +197,16 @@ You can also upload your sounds with `upload`, either describing them at the sam
 
 Note that OAuth2 authentication is required for downloading (but not with `preview`) and uploading.
 
+Other functions that operate on sounds are `comment`, `edit-sound-description`, `bookmark`, and `rate`.
+
+### Users, packs, and more
+
+There's a range of functions that return information on a Freesound user. Check the documentation. They start with `user-`.
+
+Similarly, you can get information and operate on packs with the functions that start with `pack-`.
+
+`me` returns information on the logged-in user, and `descriptors` returns the available audio descriptor names, organized by category.
+
 ## Contributing
 
-Feedback, questions, bug reports, pull requests, etc. are welcomed.
+Feedback, questions, bug reports, pull requests, etc. are very welcomed!
