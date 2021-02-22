@@ -49,7 +49,7 @@ In some cases, there are further facilities to construct parameters in a lispy w
 
 There are also convenience functions to make it easier to perform quick queries from the REPL: `print-search-result` and `print-info`.
 
-## Examples
+## Overview and examples
 
 ### Searching
 
@@ -134,6 +134,66 @@ The target for `content-search` can also be another sound. In this case, the tar
 Note that for parameters that must be enclosed in double-quotes, we have to escape the double-quotes, like "A" above.
 
 Finally, it's also possible to search in metadata and audio features at the same time, with `combined-search`.
+
+### Sounds
+
+Use `info` to get information about a sound. For example:
+
+``` lisp
+(info 1234 :fields "filesize")
+```
+
+If you're calling `info` after performing a search, it's recommended that you include the `fields` parameter with the search request, removing the need to make an extra query for each individual result.
+
+`print-info` is useful to quickly get the values at the REPL:
+
+``` lisp
+(print-info (info 213524
+		  :fields '("name" "analysis")
+		  :descriptors '("rhythm.bpm"
+				 "lowlevel.mfcc.min"
+				 "lowlevel.spectral_centroid.mean"
+				 "tonal.hpcp_entropy.var")))
+```
+
+Prints:
+
+```
+name:          120 bpm distorded drum loop
+analysis:      lowlevel:      spectral_cent: mean:          1313.7423
+                              mfcc:          min:           (-1011.6488
+                                                             -21.778429
+                                                             -79.655426
+                                                             -22.136934
+                                                             -39.293144
+                                                             -32.40432
+                                                             -29.894882
+                                                             -21.09641
+                                                             -27.268171
+                                                             -25.490017
+                                                             -66.50812
+                                                             -33.063526
+                                                             -21.2058)
+               tonal:         hpcp_entropy:  var:           0.45190468
+               rhythm:        bpm:           119.80438
+```
+
+Use `preview` to download lossy versions of sounds:
+
+``` lisp
+(preview 678 "~/678.mp3")
+```
+
+And `download` for other formats, e.g.:
+
+``` lisp
+(download 345 (merge-pathnames (gethash "name" (info 345))
+			       (user-homedir-pathname)))
+```
+
+You can also upload your sounds with `upload`, either describing them at the same time or using `describe-sound` later. Check the list of sounds pending approval with `pending-uploads`.
+
+Note that OAuth2 authentication is required for downloading (but not with `preview`) and uploading.
 
 ## Contributing
 
