@@ -1,6 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:freesound
+  (:documentation "Common Lisp client to the Freesound API.")
   (:use #:cl)
   (:export
    #:*token*
