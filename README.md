@@ -1,6 +1,6 @@
 # Common Lisp client for the Freesound API
 
-[Freesound](https://freesound.org/) is a large-scale collaborative database of audio recordings released under Creative Commons licenses. It offers an API for interacting with the database: searching for sounds, retrieving metadata, accessing audio content analysis, download and upload sounds, comment, rate, and bookmark, etc.
+[Freesound](https://freesound.org/) is a large-scale collaborative database of audio recordings released under Creative Commons licenses. It offers an API for interacting with the database: searching for sounds, retrieving meta-data, accessing audio content analysis, download and upload sounds, comment, rate, and bookmark, etc.
 
 This is a Common Lisp library for the API, created and maintained by [Nuno Trocado](https://nunotrocado.com), and released under the [MIT License](https://github.com/ntrocado/freesound/blob/master/LICENSE).
 
@@ -16,7 +16,7 @@ To use the token authentication strategy, [request new API credentials](https://
 (setf *token* <string>)
 ```
 
-If you save it on a ".token" file on the same directory as the `freesound` system, the code will be read automatically everytime the system is loaded.
+If you save it on a ".token" file on the same directory as the `freesound` system, the code will be read automatically every time the system is loaded.
 
 ### OAuth2 authentication
 
@@ -135,7 +135,7 @@ Note that for parameters that must be enclosed in double-quotes, we have to esca
 
 You can achieve the same kind of search with `similar`.
 
-Finally, it's also possible to search in metadata and audio features at the same time, with `combined-search`.
+Finally, it's also possible to search in meta-data and audio features at the same time, with `combined-search`.
 
 ### Sounds
 
@@ -210,3 +210,4 @@ Similarly, you can get information and operate on packs with the functions that 
 ## Contributing
 
 Feedback, questions, bug reports, pull requests, etc. are very welcomed!
+LocalWords:  Freesound OAuth
