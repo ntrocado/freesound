@@ -40,11 +40,13 @@ This function stores the oauth2 token in `*oauth2-access-token*`, which will be 
 ## Examples
 
 Perform a text search, using a minus '-' character to exclude terms from the search:
+
 ``` lisp
 (text-search "conga percussive -loop")
 ```
 
 This is equivalent:
+
 ``` lisp
 (text-search '("conga" "percussive" "-loop"))
 ```
@@ -52,6 +54,7 @@ This is equivalent:
 In general, any request parameters can be passed either as a single string conforming to the API syntax, or as a list of terms.
 
 Filter properties can be further specified with the operators `:and`, `:or`, `:range`, `:range-to`, and `:range-from`. For example:
+
 ``` lisp
 (text-search "rain" 
              :filter '((:tag (:and "soundscape" "forest")) 
@@ -65,14 +68,16 @@ Here's another example:
 
 ``` lisp
 (print-search-result (text-search "piano"
-		     		  :filter '(:duration (:range-to 2))
-				  :sort "rating_desc"
-				  :page-size 3
-				  :fields '("id" "name" "analysis")
-				  :descriptors '("lowlevel.spectral_centroid.mean"
-						 "lowlevel.pitch.mean")))
+                                  :filter '(:duration (:range-to 2))
+                                  :sort "rating_desc"
+                                  :page-size 3
+                                  :fields '("id" "name" "analysis")
+                                  :descriptors '("lowlevel.spectral_centroid.mean"
+                                                 "lowlevel.pitch.mean")))
 ```
+
 Which prints:
+
 ```
 The search returned 3 results from a total of 943:
 
