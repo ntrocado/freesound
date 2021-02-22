@@ -60,13 +60,13 @@
     (values access-token refresh-token)))
 
 (defun resource (uri &key (method :get) content (authentication :token)
-		       (token *token*) (oauth2-get-tokens *oauth2-access-token*))
+		       (token *token*) (oauth2-access-token *oauth2-access-token*))
   (let ((header (list (cons "Authorization"
 			    (ecase authentication
 			      (:token (progn (check-type token string)
 					     (uiop:strcat "Token " token)))
-			      (:oauth2 (progn (check-type oauth2-get-tokens string)
-					      (uiop:strcat "Bearer " oauth2-get-tokens))))))))
+			      (:oauth2 (progn (check-type oauth2-access-token string)
+					      (uiop:strcat "Bearer " oauth2-access-token))))))))
     (yason:parse (dex:request uri :method method :content content :headers header))))
 
 (defun commas (lst)
@@ -301,12 +301,13 @@ API documentation: https://freesound.org/docs/api/resources_apiv2.html#id61"
       (list (format nil "~{~(~a~)~^ ~}" tags)))))
 
 (defun translate-license (license)
-  (if (stringp license)
-      license
-      (ecase license
-	(:attribution "Attribution")
-	(:attribution-noncommercial "Attribution Noncommercial")
-	(:creative-commons "Creative Commons 0"))))
+  (when license
+    (if (stringp license)
+	license
+	(ecase license
+	  (:attribution "Attribution")
+	  (:attribution-noncommercial "Attribution Noncommercial")
+	  (:creative-commons "Creative Commons 0")))))
 
 (defun upload (file &key name tags description license pack geotag)
   "Upload an audio FILE into Freesound and (optionally) describe it. If a description is intended, all of TAGS, DESCRIPTION and LICENSE are required. OAuth2 required.
@@ -510,4 +511,4 @@ API documentation: https://freesound.org/docs/api/resources_apiv2.html#id81"
 	  (gethash "count" search-result))
   (dolist (sound (gethash "results" search-result) search-result)
     (terpri)
-    (print-sound-info sound)))
+    (print-info sound stream)))
