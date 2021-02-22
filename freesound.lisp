@@ -390,7 +390,7 @@ API documentation: https://freesound.org/docs/api/resources_apiv2.html#id68"
 
 ;;; User resources
 
-(defun user-instance (username)
+(defun user-info (username)
   "Retrieve information about Freesound user USERNAME.
 
 API documentation: https://freesound.org/docs/api/resources_apiv2.html#id70"
