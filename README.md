@@ -37,7 +37,21 @@ This function stores the oauth2 token in `*oauth2-access-token*`, which will be 
 
 ## Documentation
 
+Full documentation is [here](http://nunotrocado.com/freesound/).
+
+Refer to the [Freesound API documentation](https://freesound.org/docs/api/index.html) for the complete description of the available resources and their request parameters and accepted values, as well as the format of the responses.
+
+The responses obtained from Freesound are translated to Common Lisp data structures. In particular, objects like search results and instance information are parsed as hash tables.
+
+For the request parameters, a string conforming to the API syntax is always accepted. When multiple terms are to be passed to a single parameter, lists are also accepted, and converted to the appropriate strings under the hood. Numbers are automatically parsed too.
+
+In some cases, there are further facilities to construct parameters in a lispy way. Check the [examples](#examples) below and the [reference](http://nunotrocado.com/freesound/).
+
+There are also convenience functions to make it easier to perform quick queries from the REPL: `print-search-result` and `print-info`.
+
 ## Examples
+
+### Searching
 
 Perform a text search, using a minus '-' character to exclude terms from the search:
 
@@ -96,6 +110,30 @@ name:          MSfxP6 - 183 - One Shot Sound 3
 analysis:      lowlevel:      spectral_cent: mean:          435.96042
                               pitch:         mean:          460.73337
 ```
+
+As you can see, the response included the fields and descriptors chosen, and was limited to 3 results, as this was the `page-size` that we specified.
+
+The descriptors (audio features) can also be used as the search query, with `content-search`:
+
+``` lisp
+(content-search '("lowlevel.pitch.mean" 220)
+                :page-size 10
+		:fields '("id" "tags"))
+```
+
+The results are sorted according to their distance from the descriptor value.
+
+The target for `content-search` can also be another sound. In this case, the target sound's descriptors will be used as the search query, but it's possible to further limit the search using `:descriptors-filter`, which accepts the same constructs as `:filter` in `text-search`.
+
+``` lisp
+(content-search 39210
+		:descriptors-filter '(("tonal.key_key" "\"A\"")
+				      ("tonal.key_strength" (:range-from 0.8))))
+```
+
+Note that for parameters that must be enclosed in double-quotes, we have to escape the double-quotes, like "A" above.
+
+Finally, it's also possible to search in metadata and audio features at the same time, with `combined-search`.
 
 ## Contributing
 
