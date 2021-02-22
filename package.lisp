@@ -35,4 +35,6 @@
    #:pack-sounds
    #:pack-download
    #:me
-   #:descriptors))
+   #:descriptors
+   #:print-info
+   #:print-search-result))
