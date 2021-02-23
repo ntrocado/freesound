@@ -93,7 +93,7 @@ Here's another example:
 Which prints:
 
 ```
-The search returned 3 results from a total of 943:
+Showing 3 results from a total of 943:
 
 id:            442981
 name:          Sol-G.m4a
@@ -128,10 +128,10 @@ The target for `content-search` can also be another sound. In this case, the tar
 ``` lisp
 (content-search 39210
 		:descriptors-filter '(("tonal.key_key" "\"A\"")
-                                      ("tonal.key_strength"	(:range-from 0.8))))
+                                      ("tonal.key_strength" (:range-from 0.8))))
 ```
 
-Note that for parameters that must be enclosed in double-quotes, we have to escape the double-quotes, like "A" above.
+Note that for parameters that must be enclosed in double-quotes, we have to escape the double-quotes, like `"A"` above.
 
 You can achieve the same kind of search with `similar`.
 
@@ -210,4 +210,3 @@ Similarly, you can get information and operate on packs with the functions that 
 ## Contributing
 
 Feedback, questions, bug reports, pull requests, etc. are very welcomed!
-LocalWords:  Freesound OAuth
