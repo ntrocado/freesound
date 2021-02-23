@@ -508,7 +508,7 @@ API documentation: https://freesound.org/docs/api/resources_apiv2.html#id81"
 		 '("previous" "results" "next" "count"))
 	  (search-result)
 	  "~a is not a hash table containing the response to a search query." search-result)
-  (format t "The search returned ~a results from a total of ~a:~%"
+  (format t "Showing ~a results from a total of ~a:~%"
 	  (length (gethash "results" search-result))
 	  (gethash "count" search-result))
   (dolist (sound (gethash "results" search-result) search-result)
