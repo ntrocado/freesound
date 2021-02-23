@@ -504,8 +504,10 @@ API documentation: https://freesound.org/docs/api/resources_apiv2.html#id81"
 
 (defun print-search-result (search-result &optional (stream *standard-output*))
   "Pretty print SEARCH-RESULT, a sound list response."
-  (assert (equal '("previous" "results" "next" "count")
-		 (alexandria:hash-table-keys search-result)))
+  (assert (every (lambda (x) (nth-value 1 (gethash x search-result)))
+		 '("previous" "results" "next" "count"))
+	  (search-result)
+	  "~a is not a hash table containing the response to a search query." search-result)
   (format t "The search returned ~a results from a total of ~a:~%"
 	  (length (gethash "results" search-result))
 	  (gethash "count" search-result))
