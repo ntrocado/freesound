@@ -9,7 +9,7 @@ This is a Common Lisp library for the API, created and maintained by [Nuno Troca
 With quicklisp:
 
 ``` lisp
-(ql:quickload "freenode")
+(ql:quickload "freesound")
 ```
 
 ## Authentication
