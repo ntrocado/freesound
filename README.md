@@ -4,6 +4,14 @@
 
 This is a Common Lisp library for the API, created and maintained by [Nuno Trocado](https://nunotrocado.com), and released under the [MIT License](https://github.com/ntrocado/freesound/blob/master/LICENSE).
 
+## Installing and loading
+
+With quicklisp:
+
+``` lisp
+(ql:quickload "freenode")
+```
+
 ## Authentication
 
 The Freesound API offers two authentication strategies: token-based and OAuth2. The first one is simpler, but you need OAuth2 to access resources that imply a logged in user, including downloading sounds (but not lossy preview versions).
